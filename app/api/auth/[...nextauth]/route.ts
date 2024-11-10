@@ -1,2 +1,3 @@
-import { handlers } from "@/lib/API/services/auth/auth"; // Referring to the auth.ts we just created
+import { handlers } from "@/lib/API/services/auth/auth";
+
 export const { GET, POST } = handlers;

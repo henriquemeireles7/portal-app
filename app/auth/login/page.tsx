@@ -54,6 +54,7 @@ export default function LoginPage() {
         router.push("/dashboard");
       }
     } catch (error) {
+      console.error(error);
       form.setError("root", {
         message: "An error occurred during login",
       });

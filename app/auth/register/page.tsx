@@ -47,9 +47,24 @@ export default function RegisterPage() {
 
   const onSubmit = async (values: RegisterFormValues) => {
     try {
-      // Here you would typically make an API call to create the user
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: values.email,
+          password: values.password,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Registration failed');
+      }
+
       router.push("/auth/login");
     } catch (error) {
+      console.error(error);
       form.setError("root", {
         message: "An error occurred during registration",
       });
