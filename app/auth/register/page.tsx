@@ -4,7 +4,6 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -15,29 +14,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
-const registerFormSchema = z
-  .object({
-    email: z.string().email({
-      message: "Please enter a valid email address.",
-    }),
-    password: z.string().min(6, {
-      message: "Password must be at least 6 characters.",
-    }),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
-
-type RegisterFormValues = z.infer<typeof registerFormSchema>;
+import { RegisterUserSchema, RegisterUserSchemaType } from "@/lib/API/schemas/register";
 
 export default function RegisterPage() {
   const router = useRouter();
 
-  const form = useForm<RegisterFormValues>({
-    resolver: zodResolver(registerFormSchema),
+  const form = useForm<RegisterUserSchemaType>({
+    resolver: zodResolver(RegisterUserSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -45,12 +28,12 @@ export default function RegisterPage() {
     },
   });
 
-  const onSubmit = async (values: RegisterFormValues) => {
+  const onSubmit = async (values: RegisterUserSchemaType) => {
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email: values.email,
@@ -59,7 +42,7 @@ export default function RegisterPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Registration failed');
+        throw new Error("Registration failed");
       }
 
       router.push("/auth/login");
