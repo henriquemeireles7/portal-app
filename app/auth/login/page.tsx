@@ -2,8 +2,6 @@
 
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -14,38 +12,67 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { signInSchema, SignInSchemaType } from "@/lib/API/schemas/signIn";
+import { LoginSchema, LoginSchemaType } from "@/lib/API/schemas/login";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-export default function LoginPage() {
+const LoginPage = () => {
+  const [error, setError] = useState("");
+  const [debugInfo, setDebugInfo] = useState<{
+    errorMessage?: string;
+    error?: string;
+    ok?: boolean;
+    status?: number;
+    url?: string;
+  } | null>(null);
   const router = useRouter();
 
-  const form = useForm<SignInSchemaType>({
-    resolver: zodResolver(signInSchema),
+  const form = useForm<LoginSchemaType>({
+    resolver: zodResolver(LoginSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = async (values: SignInSchemaType) => {
+  const handleSubmit = async (values: LoginSchemaType) => {
     try {
+      setError(""); // Clear any existing errors
+      setDebugInfo(null);
+
+      console.log("Attempting login with:", { email: values.email });
+
       const result = await signIn("credentials", {
         redirect: false,
         email: values.email,
         password: values.password,
       });
 
+      console.log("SignIn result:", result);
+
       if (result?.error) {
-        form.setError("root", {
-          message: "Invalid credentials",
-        });
-      } else {
-        router.push("/dashboard");
+        console.error("Login error:", result.error);
+        setError(result.error);
+        return;
       }
+
+      if (!result?.ok) {
+        console.error("Login failed but no error provided");
+        setError("Login failed. Please try again.");
+        return;
+      }
+
+      console.log("Login successful, redirecting...");
+      router.push("/dashboard");
+      router.refresh();
     } catch (error) {
-      console.error(error);
-      form.setError("root", {
-        message: "An error occurred during login",
+      console.error("Login exception:", error);
+      setError(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
+      setDebugInfo({
+        errorMessage: error instanceof Error ? error.message : "Unknown error",
       });
     }
   };
@@ -67,19 +94,29 @@ export default function LoginPage() {
               href="/auth/register"
               className="font-medium text-indigo-600 hover:text-indigo-500"
             >
-              register a new account
+              create a new account
             </a>
           </p>
         </div>
 
-        {form.formState.errors.root && (
-          <div className="text-red-500 text-center text-sm">
-            {form.formState.errors.root.message}
+        {error && (
+          <div className="text-red-500 text-center text-sm p-2 bg-red-50 rounded">
+            Error: {error}
+          </div>
+        )}
+
+        {/* Debug Information */}
+        {debugInfo && (
+          <div className="text-xs bg-gray-100 p-2 rounded overflow-auto">
+            <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
           </div>
         )}
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-6"
+          >
             <FormField
               control={form.control}
               name="email"
@@ -87,7 +124,14 @@ export default function LoginPage() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your email" {...field} />
+                    <Input
+                      placeholder="Enter your email"
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        setError(""); // Clear error on input change
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -104,6 +148,10 @@ export default function LoginPage() {
                       type="password"
                       placeholder="Enter your password"
                       {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        setError(""); // Clear error on input change
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -151,4 +199,6 @@ export default function LoginPage() {
       </div>
     </div>
   );
-}
+};
+
+export default LoginPage;

@@ -1,79 +1,73 @@
-import NextAuth, { Session, User } from "next-auth";
-import type { NextAuthOptions } from "next-auth";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from "@/lib/API/services/init/prisma";
-import { verifyCredentials } from "@/lib/API/services/auth/verify";
-import type { JWT } from "next-auth/jwt";
+import GoogleProvider from "next-auth/providers/google";
+import prisma from "@/lib/API/services/init/prisma";
+import bcrypt from "bcryptjs";
 
-import Google from "next-auth/providers/google"
- 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [Google],
-})
-
-export const authOptions: NextAuthOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+    }),
     CredentialsProvider({
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null;
+          throw new Error("Email and password are required");
         }
 
-        try {
-          const user = await prisma.user.findUnique({
-            where: {
-              email: credentials.email as string
-            }
-          });
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email as string },
+        });
 
-          if (!user || !user.password) {
-            return null;
-          }
-          const isPasswordValid = await verifyCredentials({
-            email: credentials.email as string,
-            password: credentials.password as string
-          });
-
-          if (!isPasswordValid) {
-            return null;
-          }
-
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name
-          };
-        } catch (error) {
-          console.error("Auth error:", error);
-          return null;
+        if (!user || !user.password) {
+          throw new Error("Invalid credentials");
         }
-      }
-    })
+
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password as string,
+          user.password
+        );
+
+        if (!isPasswordValid) {
+          throw new Error("Invalid credentials");
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        };
+      },
+    }),
   ],
-  session: {
-    strategy: "jwt"
-  },
   pages: {
     signIn: "/auth/login",
-    error: "/auth/error",
   },
+  session: {
+    strategy: "jwt",
+  },
+  secret: process.env.AUTH_SECRET,
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user: User }) {
+    async jwt({ token, user }) {
       if (user) {
-        token.id = user.id as string;
+        token.id = user.id;
+        token.email = user.email;
       }
       return token;
     },
-    async session({ session, token }: { session: Session; token: JWT }) {
+    async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+        session.user.email = token.email as string;
       }
       return session;
-    }
-  }
-};
+    },
+  },
+  debug: process.env.NODE_ENV === "development",
+});

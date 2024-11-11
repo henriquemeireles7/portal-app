@@ -2,8 +2,6 @@
 
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -14,13 +12,19 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { RegisterUserSchema, RegisterUserSchemaType } from "@/lib/API/schemas/register";
+import { UserSchema, UserSchemaType } from "@/lib/API/schemas/userSchema";
+import { z } from "zod";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { authService } from "@/lib/API/services/auth/authService";
 
-export default function RegisterPage() {
+const SignUp = () => {
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  const form = useForm<RegisterUserSchemaType>({
-    resolver: zodResolver(RegisterUserSchema),
+  const form = useForm<UserSchemaType>({
+    resolver: zodResolver(UserSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -28,29 +32,37 @@ export default function RegisterPage() {
     },
   });
 
-  const onSubmit = async (values: RegisterUserSchemaType) => {
+  const handleSubmit = async (values: UserSchemaType) => {
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: values.email,
-          password: values.password,
-        }),
+      setError(""); // Clear any existing errors
+      
+      // Register user
+      const { email, password } = values;
+      await authService.register({ email, password });
+
+      // After successful registration, try to sign in automatically
+      const result = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
       });
 
-      if (!response.ok) {
-        throw new Error("Registration failed");
+      if (result?.error) {
+        setError("Login failed after registration");
+        return router.push("/auth/login");
       }
 
-      router.push("/auth/login");
+      router.push("/dashboard");
+
     } catch (error) {
-      console.error(error);
-      form.setError("root", {
-        message: "An error occurred during registration",
-      });
+      console.error('Registration error:', error);
+      if (error instanceof z.ZodError) {
+        setError(error.errors[0].message);
+      } else if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Failed to create user");
+      }
     }
   };
 
@@ -76,14 +88,14 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {form.formState.errors.root && (
+        {error && (
           <div className="text-red-500 text-center text-sm">
-            {form.formState.errors.root.message}
+            {error}
           </div>
         )}
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="email"
@@ -91,7 +103,13 @@ export default function RegisterPage() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your email" {...field} />
+                    <Input 
+                      placeholder="Enter your email" 
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -108,6 +126,9 @@ export default function RegisterPage() {
                       type="password"
                       placeholder="Enter your password"
                       {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -172,4 +193,6 @@ export default function RegisterPage() {
       </div>
     </div>
   );
-}
+};
+
+export default SignUp;
