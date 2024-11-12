@@ -1,14 +1,18 @@
-import { 
-  SidebarGroup, 
-  SidebarMenu, 
-  SidebarMenuItem, 
+import {
+  SidebarGroup,
+  SidebarMenu,
+  SidebarMenuItem,
   SidebarMenuButton,
   SidebarGroupLabel,
-  SidebarGroupContent
+  SidebarGroupContent,
 } from "@/components/ui/sidebar";
 import { Youtube, Video, Calendar, ChevronDown } from "lucide-react";
 import Link from "next/link";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 export function EventsGroup() {
   return (
@@ -53,4 +57,4 @@ export function EventsGroup() {
       </SidebarGroup>
     </Collapsible>
   );
-} 
+}

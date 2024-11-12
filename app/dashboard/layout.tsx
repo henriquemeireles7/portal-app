@@ -1,6 +1,6 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Sidebar } from "@/components/sidebar/sidebar";
-
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { DashboardSidebar } from "@/components/sidebar/sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 export default function DashboardLayout({
   children,
 }: {
@@ -8,13 +8,9 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen">
-        <Sidebar />
-        <main className="flex-1 p-8">
-          <SidebarTrigger />
-          {children}
-        </main>
-      </div>
+      <DashboardSidebar />
+        <SidebarTrigger />
+        {children}
     </SidebarProvider>
   );
 }

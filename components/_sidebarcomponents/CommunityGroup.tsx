@@ -16,7 +16,7 @@ export function CommunityGroup() {
       <SidebarGroup>
         <SidebarGroupLabel asChild>
           <CollapsibleTrigger className="flex w-full items-center">
-            <span>Comunidade</span>
+            <span>Comunidades</span>
             <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
           </CollapsibleTrigger>
         </SidebarGroupLabel>
@@ -25,7 +25,7 @@ export function CommunityGroup() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/dashboard/comunidade/comunicados">
+                  <Link href="/dashboard/comunidades/comunicados">
                     <MessageCircle className="mr-2 h-4 w-4" />
                     <span>Comunicados</span>
                   </Link>
@@ -33,7 +33,7 @@ export function CommunityGroup() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/dashboard/comunidade/ai">
+                  <Link href="/dashboard/comunidades/ai">
                     <Cpu className="mr-2 h-4 w-4" />
                     <span>AI e Automações</span>
                   </Link>
@@ -41,7 +41,7 @@ export function CommunityGroup() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/dashboard/comunidade/magic">
+                  <Link href="/dashboard/comunidades/magic">
                     <Users className="mr-2 h-4 w-4" />
                     <span>Comunidade Magic</span>
                   </Link>
@@ -49,7 +49,7 @@ export function CommunityGroup() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/dashboard/comunidade/piw">
+                  <Link href="/dashboard/comunidades/piw">
                     <DollarSign className="mr-2 h-4 w-4" />
                     <span>Produtos PIW</span>
                   </Link>

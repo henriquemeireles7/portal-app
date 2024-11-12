@@ -3,7 +3,6 @@
 import {
   Sidebar as ShadcnSidebar,
   SidebarContent,
-  SidebarProvider,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 
@@ -15,21 +14,19 @@ import { SoftwaresGroup } from "@/components/_sidebarcomponents/SoftwaresGroup";
 import { MarketplaceGroup } from "@/components/_sidebarcomponents/MarketplaceGroup";
 import { SidebarFooter } from "@/components/_sidebarcomponents/SidebarFooter";
 
-export function Sidebar() {
+export function DashboardSidebar() {
   return (
-    <SidebarProvider>
-      <ShadcnSidebar>
-        <SidebarHeader />
-        <SidebarContent>
-          <EventsGroup />
-          <CommunityGroup />
-          <LearningPathsGroup />
-          <SidebarSeparator />
-          <SoftwaresGroup />
-          <MarketplaceGroup />
-        </SidebarContent>
-        <SidebarFooter />
-      </ShadcnSidebar>
-    </SidebarProvider>
+    <ShadcnSidebar>
+      <SidebarHeader />
+      <SidebarContent>
+        <EventsGroup />
+        <CommunityGroup />
+        <LearningPathsGroup />
+        <SidebarSeparator />
+        <SoftwaresGroup />
+        <MarketplaceGroup />
+      </SidebarContent>
+      <SidebarFooter />
+    </ShadcnSidebar>
   );
 }
