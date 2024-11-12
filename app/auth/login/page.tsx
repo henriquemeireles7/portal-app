@@ -19,13 +19,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 const LoginPage = () => {
   const [error, setError] = useState("");
-  const [debugInfo, setDebugInfo] = useState<{
-    errorMessage?: string;
-    error?: string;
-    ok?: boolean;
-    status?: number;
-    url?: string;
-  } | null>(null);
   const router = useRouter();
 
   const form = useForm<LoginSchemaType>({
@@ -39,9 +32,6 @@ const LoginPage = () => {
   const handleSubmit = async (values: LoginSchemaType) => {
     try {
       setError(""); // Clear any existing errors
-      setDebugInfo(null);
-
-      console.log("Attempting login with:", { email: values.email });
 
       const result = await signIn("credentials", {
         redirect: false,
@@ -49,31 +39,22 @@ const LoginPage = () => {
         password: values.password,
       });
 
-      console.log("SignIn result:", result);
-
       if (result?.error) {
-        console.error("Login error:", result.error);
         setError(result.error);
         return;
       }
 
       if (!result?.ok) {
-        console.error("Login failed but no error provided");
         setError("Login failed. Please try again.");
         return;
       }
 
-      console.log("Login successful, redirecting...");
       router.push("/dashboard");
       router.refresh();
     } catch (error) {
-      console.error("Login exception:", error);
       setError(
         error instanceof Error ? error.message : "An unexpected error occurred"
       );
-      setDebugInfo({
-        errorMessage: error instanceof Error ? error.message : "Unknown error",
-      });
     }
   };
 
@@ -102,13 +83,6 @@ const LoginPage = () => {
         {error && (
           <div className="text-red-500 text-center text-sm p-2 bg-red-50 rounded">
             Error: {error}
-          </div>
-        )}
-
-        {/* Debug Information */}
-        {debugInfo && (
-          <div className="text-xs bg-gray-100 p-2 rounded overflow-auto">
-            <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
           </div>
         )}
 
